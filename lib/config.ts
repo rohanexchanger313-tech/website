@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Bharat OTC",
+  name: "USDT",
   whatsapp: "https://wa.me/9779716565504",
   telegram: "https://t.me/sakar4012",
   telegramHandle: "@sakar4012",

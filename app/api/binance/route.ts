@@ -14,7 +14,7 @@ export async function GET() {
     const response = await fetch(binanceTickerEndpoint, {
       cache: "no-store",
       signal: AbortSignal.timeout(10000),
-      headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; BharatOTC/1.0)" }
+      headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; USDT/1.0)" }
     });
     if (!response.ok) {
       return NextResponse.json({ status: "unavailable", message: "Binance spot price is unavailable." }, { status: 502 });
