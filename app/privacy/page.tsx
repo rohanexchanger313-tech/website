@@ -1,0 +1,2 @@
+import React from "react";
+export default function Privacy() { return <main className="section legal"><a href="/" className="eyebrow">← USDT DESK</a><h1>Privacy Policy</h1><p>Contact details and transaction information should only be shared through the operator&apos;s confirmed communication channels. This site does not request private keys, seed phrases or wallet passwords.</p><p>Owner review required before publication: document data retention, processors, legal basis and contact details.</p></main> }

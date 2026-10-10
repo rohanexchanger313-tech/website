@@ -1,0 +1,41 @@
+project:
+  scope_path: "."
+  loc: 670
+  languages: [html]
+  git: false
+  structure:
+    ".": "Single static HTML entrypoint (index.html)"
+  notes: "Small static frontend currently implemented as one HTML file; target is a Next.js/TypeScript/Tailwind modernization."
+
+assessment:
+  change_type: rewrite
+  rationale: |
+    The repository is a single static HTML page and the requested modernization
+    changes the application stack to Next.js, TypeScript, and Tailwind CSS.
+  transformations:
+    - fromStack: "Static HTML"
+      fromStackVersion: ""
+      toStack: "Next.js/TypeScript/Tailwind CSS"
+      toStackVersion: "user-specified"
+  grouping_needed: false
+  deep_planning: undecided
+
+progress_sync:
+  run_id: 8f741ee6-48bd-4049-aa48-29e081d75e8d
+  grouping_mode: none
+  execution_mode: ""
+  plan_start_time: "2026-10-08T17:15:23Z"
+  plan_completed_time: ""
+  execution_start_time: ""
+  execution_completed_time: ""
+  validation_start_time: ""
+  validation_completed_time: ""
+  total_phases: 0
+  completed_phases: 0
+  total_modules: 1
+  completed_modules: 0
+  total_tasks: 0
+  completed_tasks: 0
+  total_commits: 0
+  build_verified: false
+  test_verified: false
