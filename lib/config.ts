@@ -1,8 +1,8 @@
 export const siteConfig = {
   name: "USDT",
   whatsapp: "https://wa.me/9779716565504",
-  telegram: "https://t.me/sakar4012",
-  telegramHandle: "@sakar4012",
+  telegram: "https://t.me/Usdtbuyerus",
+  telegramHandle: "@Usdtbuyerus",
   operatorWallet: "0xA0a90E9d255EA98716C809Cd9980246D8b2B2A70",
   chainId: 56,
   networkName: "BNB Smart Chain",
