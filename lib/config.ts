@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "USDT",
-  whatsapp: "https://wa.me/9779716565504",
+  whatsapp: "https://wa.me/9779813728544",
   telegram: "https://t.me/Usdtbuyerus",
   telegramHandle: "@Usdtbuyerus",
   operatorWallet: "0xA0a90E9d255EA98716C809Cd9980246D8b2B2A70",
@@ -11,10 +11,10 @@ export const siteConfig = {
 } as const;
 
 export const payoutRates = {
-  upi: 110,
+  upi: 118,
   imps: 112,
   bankTransfer: 115,
-  cdm: 118
+  cdm: 110
 } as const;
 
 export type PayoutMethod = keyof typeof payoutRates;
