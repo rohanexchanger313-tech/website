@@ -5,8 +5,8 @@ import Image from "next/image";
 import { payoutLabels, payoutRates, siteConfig, type PayoutMethod } from "../lib/config";
 import { formatUsdt, inr } from "../lib/formatting";
 
-const sampleAmounts = [100, 250, 500, 1000, 2500];
 const navItems = [["Market", "market"], ["How It Works", "how-it-works"], ["FAQ", "faq"], ["Contact", "contact"]];
+const paymentMarks: Record<PayoutMethod, string> = { upi: "UPI", imps: "IMPS", bankTransfer: "BANK", cdm: "CDM" };
 
 function ContactLinks({ className = "" }: { className?: string }) {
   return <div className={`contact-links ${className}`}>
@@ -87,18 +87,11 @@ function PaymentCard({ method, onStartSell }: { method: PayoutMethod; onStartSel
 export default function DeskApp() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [amount, setAmount] = useState("100");
-  const [sampleIndex, setSampleIndex] = useState(0);
   const [market, setMarket] = useState<{ status: string; price?: number; timestamp?: number; offers?: number; message?: string }>({ status: "loading" });
   const [observations, setObservations] = useState<{ time: number; price: number }[]>([]);
   const [hash, setHash] = useState("");
   const [verification, setVerification] = useState("");
 
-  const samplePayout = sampleAmounts[sampleIndex] * payoutRates.upi;
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setSampleIndex((index) => (index + 1) % sampleAmounts.length), 3500);
-    return () => window.clearInterval(timer);
-  }, []);
   const updateMarket = async () => {
     try {
       const response = await fetch("/api/binance", { cache: "no-store" });
@@ -131,12 +124,19 @@ export default function DeskApp() {
       <button className="menu-button" aria-expanded={menuOpen} aria-controls="nav-links" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "Close" : "Menu"}</button>
       <div id="nav-links" className={`nav-links ${menuOpen ? "open" : ""}`}>{navItems.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}<a className="nav-cta" href="#sell" onClick={() => setMenuOpen(false)}>Sell USDT</a></div>
     </nav>
-    <section id="home" className="hero section"><div className="hero-copy"><p className="eyebrow">USDT · INDIA</p><h1>Sell USDT.<br /><em>Get INR.</em></h1><p className="lede">Check our current USDT payout rates and contact us to sell your USDT for INR.</p><ContactLinks /><p className="disclaimer">Manual settlement · Blockchain transaction verification · You remain in control of your wallet</p></div>
-      <div className="sample-card"><span className="eyebrow">Sample Payout</span><p className="sample-amount">{formatUsdt(sampleAmounts[sampleIndex])} <small>USDT</small></p><p className="sample-inr">{inr.format(samplePayout)}</p><p className="muted">Illustration at the UPI payout rate</p></div>
-    </section>
-    <section id="sell" className="section payment-section"><div className="payment-section-inner"><div className="payment-section-heading"><p className="eyebrow">START A SELL FLOW</p><h2>Choose a payout method</h2><p className="muted">Enter your payment details and USDT amount. Your estimated INR payout updates automatically.</p></div>
+    <section id="home" className="reference-hero"><div className="reference-hero-inner">
+      <div className="reference-hero-copy"><p className="eyebrow">DAILY USDT · INDIA</p><div className="reference-hero-title"><span className="reference-token" aria-hidden="true">₮</span><div><h1>USDT</h1><p>SELL USDT</p></div></div><div className="reference-perks"><span>Fast</span><span>Secure</span><span>Trusted</span></div><p className="reference-motto">Your trust is our priority.</p><p className="muted">Manual INR settlement · BNB Smart Chain only</p><ContactLinks className="reference-hero-actions" /></div>
+      <div className="reference-hero-visual" aria-label="Trust Wallet USDT on BNB Smart Chain">
+        <div className="reference-rate-badge"><span>Daily USDT</span><strong>Sell</strong><small>Transparent INR rates</small></div>
+        <div className="reference-phone"><span className="reference-phone-speaker" /><div className="reference-phone-screen"><span className="reference-wallet-check">✓</span><strong>Trust Wallet</strong><span className="reference-wallet-caption">USDT · BNB Smart Chain</span><span className="reference-phone-token">₮</span><span className="reference-network-tag">BEP-20 ONLY</span></div></div>
+        <span className="reference-shield" aria-hidden="true">✓</span>
+      </div>
+    </div></section>
+    <section className="rate-summary section" aria-labelledby="rate-summary-title"><div className="rate-summary-inner"><div className="rate-summary-heading"><div><h2 id="rate-summary-title">USDT SELL RATE</h2><span>Per USDT</span></div><p>Choose your payment method</p></div><div className="rate-summary-grid">{(Object.keys(payoutRates) as PayoutMethod[]).map((method) => <div className={`rate-summary-card rate-summary-${method}`} key={method}><span className="rate-summary-mark">{paymentMarks[method]}</span><span className="rate-summary-name">{payoutLabels[method]}</span><span className="rate-summary-value">{inr.format(payoutRates[method])}</span></div>)}</div></div></section>
+    <section id="sell" className="section payment-section"><div className="payment-section-inner"><div className="payment-section-heading"><p className="eyebrow">HOW TO SELL USDT?</p><h2>Choose your payment method</h2><p className="muted">Enter your payment details and USDT amount. Your estimated INR payout updates automatically.</p></div>
       <div className="payment-cards-grid">{(Object.keys(payoutRates) as PayoutMethod[]).map((method) => <PaymentCard key={method} method={method} onStartSell={setAmount} />)}</div></div>
     </section>
+    <section className="trust-ribbon" aria-label="Service highlights"><div className="trust-ribbon-inner"><div className="trust-ribbon-item"><span>✓</span><p><strong>Safe transactions</strong><small>Verified on-chain</small></p></div><div className="trust-ribbon-item"><span>↗</span><p><strong>Fast process</strong><small>Clear next steps</small></p></div><div className="trust-ribbon-item"><span>₮</span><p><strong>Trusted settlement</strong><small>Manual INR payout</small></p></div><div className="trust-ribbon-item"><span>₹</span><p><strong>Clear rates</strong><small>Shown before you sell</small></p></div></div></section>
     <section id="market" className="section dark-section"><div className="section-heading"><p className="eyebrow">MARKET REFERENCE</p><h2>Live Binance USDT price</h2><p className="muted">Direct Binance spot reference for USDT/USDC. This is a market reference, not our INR payout rate.</p></div><div className="market-panel"><div><span className={`status ${market.status}`}>{market.status === "loading" ? "UPDATING" : market.status === "live" ? "LIVE" : "UNAVAILABLE"}</span>{market.price ? <><p className="market-price">${market.price.toFixed(6)} <small>/ USDT</small></p><p className="muted">Binance Spot · Last observation {market.timestamp ? new Date(market.timestamp).toLocaleTimeString("en-IN") : ""}</p></> : <><p className="market-message">{market.message || "Collecting live Binance USDT price..."}</p><button className="button button-outline" onClick={() => void updateMarket()}>Retry Binance price</button></>}</div><div className="chart" aria-label="Live Binance USDT spot price chart">{observations.length > 1 ? <svg viewBox="0 0 190 90" preserveAspectRatio="none" role="img"><polyline points={path} fill="none" stroke="currentColor" strokeWidth="2" /></svg> : <span>Collecting live observations...</span>}</div></div></section>
     <section id="how-it-works" className="section"><p className="eyebrow">THE SELL FLOW</p><h2>Clear from start to finish</h2><div className="steps">{["Choose a payout method and amount", "Confirm the current rate with the operator", "Send USDT on BNB Smart Chain (BEP-20)", "Share your transaction hash for verification", "Operator manually settles INR"].map((text, index) => <div className="step" key={text}><span>0{index + 1}</span><p>{text}</p></div>)}</div><div className="wallet-card"><div><p className="eyebrow">RECEIVING WALLET</p><h3>Trust Wallet · USDT · BEP-20</h3></div><Image className="qr" src="/usdt-bep20-qr.png" width={150} height={150} alt="QR code for the USDT BNB Smart Chain receiving wallet" /><p className="warning">Send USDT only on BNB Smart Chain (BEP-20). Sending through another network may result in loss of funds. Always confirm the wallet address and network before sending.</p></div></section>
     <section className="section verify"><p className="eyebrow">TRANSACTION CHECK</p><h2>Verify a specific transfer</h2><p className="muted">Enter the hash after sending. Verification checks the BNB Smart Chain receipt, USDT contract, recipient, amount and confirmations.</p><div className="verify-form"><label htmlFor="hash">Transaction hash</label><input id="hash" value={hash} onChange={(event) => setHash(event.target.value)} placeholder="0x..." /><button className="button button-gold" onClick={verifyTransaction}>Verify transaction</button></div>{verification && <p className="muted" role="status">{verification}</p>}</section>
