@@ -1,39 +1,48 @@
 import { NextResponse } from "next/server";
 
-const binanceTickerEndpoint = "https://api.binance.com/api/v3/ticker/price?symbol=USDTUSDC";
+const binanceTickerEndpoints = [
+  "https://data-api.binance.vision/api/v3/ticker/price?symbol=USDCUSDT",
+  "https://api.binance.com/api/v3/ticker/price?symbol=USDCUSDT"
+] as const;
 export const dynamic = "force-dynamic";
 
 type BinanceTicker = { symbol?: string; price?: string };
 
 function isBinanceTicker(value: unknown): value is BinanceTicker {
-  return typeof value === "object" && value !== null && "price" in value;
+  return typeof value === "object" && value !== null && "symbol" in value && value.symbol === "USDCUSDT" && "price" in value;
+}
+
+async function fetchLivePrice(): Promise<number | null> {
+  for (const endpoint of binanceTickerEndpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+        headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; USDT/1.0)" }
+      });
+      if (!response.ok) continue;
+
+      const data: unknown = await response.json();
+      const inversePairPrice = isBinanceTicker(data) ? Number(data.price) : NaN;
+      if (Number.isFinite(inversePairPrice) && inversePairPrice > 0) return 1 / inversePairPrice;
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 export async function GET() {
-  try {
-    const response = await fetch(binanceTickerEndpoint, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(10000),
-      headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; USDT/1.0)" }
-    });
-    if (!response.ok) {
-      return NextResponse.json({ status: "unavailable", message: "Binance spot price is unavailable." }, { status: 502 });
-    }
-
-    const data: unknown = await response.json();
-    const price = isBinanceTicker(data) ? Number(data.price) : NaN;
-    if (!Number.isFinite(price) || price <= 0) {
-      return NextResponse.json({ status: "unavailable", message: "Binance returned an invalid USDT price." }, { status: 502 });
-    }
-
-    return NextResponse.json({
-      status: "live",
-      source: "Binance Spot",
-      market: "USDT/USDC",
-      price,
-      timestamp: Date.now()
-    });
-  } catch {
-    return NextResponse.json({ status: "unavailable", message: "Binance spot price could not be reached." }, { status: 502 });
+  const price = await fetchLivePrice();
+  if (price === null) {
+    return NextResponse.json({ status: "unavailable", message: "Binance spot price is temporarily unavailable." }, { status: 502 });
   }
+
+  return NextResponse.json({
+    status: "live",
+    source: "Binance Spot",
+    market: "USDT/USDC",
+    price,
+    timestamp: Date.now()
+  });
 }
