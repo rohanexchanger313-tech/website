@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { payoutLabels, payoutRates, siteConfig, type PayoutMethod } from "../lib/config";
 import { formatUsdt, inr } from "../lib/formatting";
@@ -15,9 +15,77 @@ function ContactLinks({ className = "" }: { className?: string }) {
   </div>;
 }
 
+type PaymentField = {
+  id: string;
+  label: string;
+  placeholder?: string;
+  kind?: "bank";
+};
+
+const banks = ["SBI", "HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak Mahindra Bank", "Other"];
+const paymentFields: Record<PayoutMethod, PaymentField[]> = {
+  upi: [{ id: "upiId", label: "UPI ID", placeholder: "Enter UPI ID" }],
+  imps: [
+    { id: "bankName", label: "Bank name", kind: "bank" },
+    { id: "accountNumber", label: "Account number", placeholder: "Enter account number" },
+    { id: "ifsc", label: "IFSC code", placeholder: "Enter IFSC code" },
+    { id: "accountHolder", label: "Account holder name", placeholder: "Enter account holder name" }
+  ],
+  bankTransfer: [
+    { id: "bankName", label: "Bank name", kind: "bank" },
+    { id: "accountNumber", label: "Account number", placeholder: "Enter account number" },
+    { id: "ifsc", label: "IFSC code", placeholder: "Enter IFSC code" },
+    { id: "accountHolder", label: "Account holder name", placeholder: "Enter account holder name" }
+  ],
+  cdm: [
+    { id: "bankName", label: "Bank name", kind: "bank" },
+    { id: "cdmLocation", label: "CDM location", placeholder: "Enter CDM location" },
+    { id: "transactionReference", label: "Transaction ID / reference", placeholder: "Enter reference" }
+  ]
+};
+
+function PaymentCard({ method, onStartSell }: { method: PayoutMethod; onStartSell: (amount: string) => void }) {
+  const [amount, setAmount] = useState("100");
+  const [details, setDetails] = useState<Record<string, string>>({});
+  const numericAmount = Math.max(0, Number(amount) || 0);
+  const payout = numericAmount * payoutRates[method];
+
+  const submitPayment = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onStartSell(amount);
+    const detailLines = paymentFields[method]
+      .map(({ id, label }) => details[id] ? `${label}: ${details[id]}` : "")
+      .filter(Boolean);
+    const whatsappUrl = new URL(siteConfig.whatsapp);
+    whatsappUrl.searchParams.set("text", [
+      `Hi, I want to sell ${amount} USDT using ${payoutLabels[method]}.`,
+      `Estimated payout: ${inr.format(payout)} INR.`,
+      ...detailLines
+    ].join("\n"));
+    window.open(whatsappUrl.toString(), "_blank", "noopener,noreferrer");
+  };
+
+  return <article className={`payment-card payment-card-${method}`}>
+    <header className="payment-card-header">
+      <span className="payment-card-mark" aria-hidden="true">{method === "upi" ? "UPI" : method === "cdm" ? "₹" : "▤"}</span>
+      <div><h3>{payoutLabels[method]}</h3><p className="payment-card-rate"><span>Rate</span><strong>{inr.format(payoutRates[method])}</strong><small>/ USDT</small></p></div>
+    </header>
+    <form className="payment-card-form" onSubmit={submitPayment}>
+      <div className="payment-card-fields">{paymentFields[method].map((field) => <label className="payment-card-field" htmlFor={`${method}-${field.id}`} key={field.id}>
+        <span>{field.label}</span>
+        {field.kind === "bank" ? <select id={`${method}-${field.id}`} value={details[field.id] || ""} onChange={(event) => setDetails((current) => ({ ...current, [field.id]: event.target.value }))} required>
+          <option value="" disabled>Select bank</option>{banks.map((bank) => <option key={bank}>{bank}</option>)}
+        </select> : <input id={`${method}-${field.id}`} type="text" value={details[field.id] || ""} onChange={(event) => setDetails((current) => ({ ...current, [field.id]: event.target.value }))} placeholder={field.placeholder} required />}
+      </label>)}</div>
+      <label className="payment-card-field" htmlFor={`${method}-amount`}><span>USDT amount</span><input id={`${method}-amount`} type="number" min="0.000001" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} required /></label>
+      <output className="payment-card-estimate"><span>You will get (INR)</span><strong>{inr.format(payout)}</strong></output>
+      <button className="payment-submit button button-gold" type="submit">Sell USDT ({payoutLabels[method]})</button>
+    </form>
+  </article>;
+}
+
 export default function DeskApp() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [method, setMethod] = useState<PayoutMethod>("upi");
   const [amount, setAmount] = useState("100");
   const [sampleIndex, setSampleIndex] = useState(0);
   const [market, setMarket] = useState<{ status: string; price?: number; timestamp?: number; offers?: number; message?: string }>({ status: "loading" });
@@ -25,9 +93,7 @@ export default function DeskApp() {
   const [hash, setHash] = useState("");
   const [verification, setVerification] = useState("");
 
-  const numericAmount = Math.max(0, Number(amount) || 0);
-  const estimate = numericAmount * payoutRates[method];
-  const samplePayout = sampleAmounts[sampleIndex] * payoutRates[method];
+  const samplePayout = sampleAmounts[sampleIndex] * payoutRates.upi;
 
   useEffect(() => {
     const timer = window.setInterval(() => setSampleIndex((index) => (index + 1) % sampleAmounts.length), 3500);
@@ -66,10 +132,10 @@ export default function DeskApp() {
       <div id="nav-links" className={`nav-links ${menuOpen ? "open" : ""}`}>{navItems.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}<a className="nav-cta" href="#sell" onClick={() => setMenuOpen(false)}>Sell USDT</a></div>
     </nav>
     <section id="home" className="hero section"><div className="hero-copy"><p className="eyebrow">USDT · INDIA</p><h1>Sell USDT.<br /><em>Get INR.</em></h1><p className="lede">Check our current USDT payout rates and contact us to sell your USDT for INR.</p><ContactLinks /><p className="disclaimer">Manual settlement · Blockchain transaction verification · You remain in control of your wallet</p></div>
-      <div className="sample-card"><span className="eyebrow">Sample Payout</span><p className="sample-amount">{formatUsdt(sampleAmounts[sampleIndex])} <small>USDT</small></p><p className="sample-inr">{inr.format(samplePayout)}</p><p className="muted">Illustration based on our current payout rate</p></div>
+      <div className="sample-card"><span className="eyebrow">Sample Payout</span><p className="sample-amount">{formatUsdt(sampleAmounts[sampleIndex])} <small>USDT</small></p><p className="sample-inr">{inr.format(samplePayout)}</p><p className="muted">Illustration at the UPI payout rate</p></div>
     </section>
-    <section id="sell" className="section calculator-section"><div><p className="eyebrow">START A SELL FLOW</p><h2>Estimate your payout</h2><p className="muted">Choose how you would like to receive INR. Final payout is confirmed with the operator before the transaction.</p></div>
-      <div className="calculator"><label htmlFor="amount">You sell (USDT)</label><input id="amount" inputMode="decimal" min="0" type="number" value={amount} onChange={(event) => setAmount(event.target.value)} /><div className="method-grid" role="tablist" aria-label="Payout method">{(Object.keys(payoutRates) as PayoutMethod[]).map((key) => <button key={key} role="tab" aria-selected={method === key} className={method === key ? "method active" : "method"} onClick={() => setMethod(key)}>{payoutLabels[key]}<strong>{inr.format(payoutRates[key])}<small> / USDT</small></strong></button>)}</div><div className="estimate"><span>Estimated Payout</span><strong>{inr.format(estimate)}</strong><small>{formatUsdt(numericAmount)} USDT × {inr.format(payoutRates[method])}</small></div><ContactLinks /></div>
+    <section id="sell" className="section payment-section"><div className="payment-section-inner"><div className="payment-section-heading"><p className="eyebrow">START A SELL FLOW</p><h2>Choose a payout method</h2><p className="muted">Enter your payment details and USDT amount. Your estimated INR payout updates automatically.</p></div>
+      <div className="payment-cards-grid">{(Object.keys(payoutRates) as PayoutMethod[]).map((method) => <PaymentCard key={method} method={method} onStartSell={setAmount} />)}</div></div>
     </section>
     <section id="market" className="section dark-section"><div className="section-heading"><p className="eyebrow">MARKET REFERENCE</p><h2>Live Binance USDT price</h2><p className="muted">Direct Binance spot reference for USDT/USDC. This is a market reference, not our INR payout rate.</p></div><div className="market-panel"><div><span className={`status ${market.status}`}>{market.status === "loading" ? "UPDATING" : market.status === "live" ? "LIVE" : "UNAVAILABLE"}</span>{market.price ? <><p className="market-price">${market.price.toFixed(6)} <small>/ USDT</small></p><p className="muted">Binance Spot · Last observation {market.timestamp ? new Date(market.timestamp).toLocaleTimeString("en-IN") : ""}</p></> : <><p className="market-message">{market.message || "Collecting live Binance USDT price..."}</p><button className="button button-outline" onClick={() => void updateMarket()}>Retry Binance price</button></>}</div><div className="chart" aria-label="Live Binance USDT spot price chart">{observations.length > 1 ? <svg viewBox="0 0 190 90" preserveAspectRatio="none" role="img"><polyline points={path} fill="none" stroke="currentColor" strokeWidth="2" /></svg> : <span>Collecting live observations...</span>}</div></div></section>
     <section id="how-it-works" className="section"><p className="eyebrow">THE SELL FLOW</p><h2>Clear from start to finish</h2><div className="steps">{["Choose a payout method and amount", "Confirm the current rate with the operator", "Send USDT on BNB Smart Chain (BEP-20)", "Share your transaction hash for verification", "Operator manually settles INR"].map((text, index) => <div className="step" key={text}><span>0{index + 1}</span><p>{text}</p></div>)}</div><div className="wallet-card"><div><p className="eyebrow">RECEIVING WALLET</p><h3>Trust Wallet · USDT · BEP-20</h3></div><Image className="qr" src="/usdt-bep20-qr.png" width={150} height={150} alt="QR code for the USDT BNB Smart Chain receiving wallet" /><p className="warning">Send USDT only on BNB Smart Chain (BEP-20). Sending through another network may result in loss of funds. Always confirm the wallet address and network before sending.</p></div></section>

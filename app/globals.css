@@ -5,3 +5,25 @@
 .verify{background:var(--charcoal);max-width:none;padding-left:max(5vw,24px);padding-right:max(5vw,24px)}.verify-form{display:flex;gap:10px;max-width:700px;margin-top:25px}.verify-form label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.verify-form input{flex:1;min-width:0;background:var(--black);border:1px solid var(--line);color:var(--white);padding:13px}.verify-form input:focus{outline:none;border-color:var(--gold)}
 @media(max-width:760px){.navbar{height:68px}.menu-button{display:block}.nav-links{display:none;position:absolute;top:68px;left:0;right:0;background:var(--charcoal);padding:20px 24px;flex-direction:column;align-items:stretch;border-bottom:1px solid var(--line)}.nav-links.open{display:flex}.nav-cta{text-align:center}.section{padding-top:90px;padding-bottom:90px}.hero{display:block;padding-top:135px;min-height:auto}.hero h1{font-size:64px}.sample-card{margin-top:60px}.calculator-section,.market-panel{display:block}.calculator{margin-top:30px}.steps{grid-template-columns:1fr 1fr}.wallet-card{grid-template-columns:1fr}.qr{order:-1}.footer{grid-template-columns:1fr}}
 @media(max-width:420px){.hero h1{font-size:55px}.steps{grid-template-columns:1fr}.contact-links .button{width:100%;text-align:center}}
+.payment-section{max-width:none;background:var(--charcoal);padding-left:max(5vw,24px);padding-right:max(5vw,24px)}
+.payment-section-inner{max-width:1120px;margin:0 auto}
+.payment-section-heading{max-width:680px;margin:0 0 36px}
+.payment-section-heading h2{margin:0 0 12px}
+.payment-cards-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:stretch}
+.payment-card{display:flex;min-width:0;flex-direction:column;padding:18px;background:var(--black);border:1px solid var(--line);border-radius:4px}
+.payment-card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.payment-card-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid var(--gold);color:var(--gold);font-size:14px;font-weight:800}
+.payment-card-header h3{margin:0 0 9px;font-size:17px}
+.payment-card-rate{display:grid;grid-template-columns:auto auto auto;align-items:baseline;gap:5px;margin:0;color:var(--muted);font-size:11px}
+.payment-card-rate strong{color:var(--gold-light);font-size:20px}
+.payment-card-form{display:flex;flex:1;flex-direction:column;gap:15px}
+.payment-card-fields{display:grid;gap:11px}
+.payment-card-field{display:grid;gap:6px;min-width:0;color:var(--muted);font-size:11px}
+.payment-card-field input,.payment-card-field select{width:100%;min-width:0;height:40px;padding:0 10px;background:var(--charcoal);border:1px solid var(--line);border-radius:3px;color:var(--white);font-size:12px}
+.payment-card-field input:focus,.payment-card-field select:focus{outline:none;border-color:var(--gold)}
+.payment-card-field input::placeholder{color:#75716b}
+.payment-card-estimate{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.payment-card-estimate strong{color:var(--gold-light);font-size:20px}
+.payment-submit{width:100%;border:0;text-align:center}
+@media(max-width:960px){.payment-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.payment-cards-grid{grid-template-columns:minmax(0,1fr)}.payment-section-heading{margin-bottom:26px}}
